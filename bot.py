@@ -36,7 +36,6 @@ def gpt(message):  # функция перехода в режим общени�
 
 @bot.message_handler(commands=['date'])
 def date(message):
-    dialog.mode = 'date'
     photo = open(r'resources\images\date.jpg', 'rb')
     with open(r'resources\messages\date.txt', 'r', encoding='utf-8') as file:
         date_text = file.read().replace('*', '')
@@ -50,38 +49,65 @@ def date(message):
     inline_keyboard.add(mash_button, ida_button, olsen_button, scarlet_button, ana_button)
     bot.send_photo(message.chat.id, photo, date_text, reply_markup=inline_keyboard)
 
+@bot.message_handler(commands=['helper'])
+def helper(message):
+    dialog.mode = 'helper'
+    photo = open(r'resources\images\helper.png', 'rb')
+    text = open(r'resources\messages\helper.txt', 'r', encoding='utf-8').read()
+    promt = open(r'resources\prompts\helper.txt', 'r', encoding='utf-8').read()
+    bot.send_photo(message.chat.id, photo, caption=text)
+    chatgpt.set_prompt(promt)
+
+
 # конец обработчиков команд пользователя
 
 # обработчики нажатия кнопок
 @bot.callback_query_handler(func=lambda call: True)
 def choose_girl(call):
+    dialog.mode = 'date'
     match call.data:
         case "date_mash":
             name = 'Маш Милаш'
             image = open(r'resources\images\photo_mash.webp', 'rb')
+            promt = open(r'resources\prompts\date_mash.txt', 'r', encoding='utf-8').read()
         case 'date_ida':
             name = "Ида Галич"
             image = open(r'resources\images\photo_ida.webp', 'rb')
+            promt = open(r'resources\prompts\date_ida.txt', 'r', encoding='utf-8').read()
         case 'date_olsen':
             name = 'Элизабет Олсен'
             image = open(r'resources\images\photo_olsen.jpg', 'rb')
+            promt = open(r'resources\prompts\date_olsen.txt', 'r', encoding='utf-8').read()
         case 'date_ana':
             name = 'Ана Де Армас'
             image = open(r'resources\images\photo_ana.jpeg', 'rb')
+            promt = open(r'resources\prompts\date_ana.txt', 'r', encoding='utf-8').read()
         case 'date_scarlet':
             name = 'Скарлет Йохансон'
             image = open(r'resources\images\photo_scarlet.jpg', 'rb')
+            promt = open(r'resources\prompts\date_scarlet.txt', 'r', encoding='utf-8').read()
+
     bot.answer_callback_query(call.id, text='Отличный выбор!')
-    text = f'Твой выбор: {name}'
+    text = f'Твой выбор: {name}\nПиши свое первое сообщение:'
     bot.send_photo(call.message.chat.id, image, caption=text)
-    date_dialog(call.message)
+    chatgpt.set_prompt(promt)
 
 # конец обработчиков нажатия кнопок
 
 
 # простые функции
-def date_dialog(message):
+def helper_dialog(message):
+    text = message.text
+    bot_message = bot.send_message(message.chat.id, 'ChatGPT отвечает...')
+    answer = chatgpt.add_message(text)
+    bot.edit_message_text(answer, chat_id=message.chat.id, message_id=bot_message.id)
 
+
+def date_dialog(message):
+    text = message.text
+    my_message = bot.send_message(message.chat.id, "Пишет сообщение...")
+    answer = chatgpt.add_message(text)
+    bot.edit_message_text(answer, chat_id=message.chat.id, message_id=my_message.id)
 
 
 def gpt_dialog(message):  # функция непосредственно общения с ботом
@@ -101,6 +127,8 @@ def main(message):  # функция для перемещения по маши
             gpt_dialog(message)
         case 'date':
             date_dialog(message)
+        case 'helper':
+            helper_dialog(message)
 
 
 
