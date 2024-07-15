@@ -2,6 +2,7 @@ import telebot
 from gpt import *
 from util import *
 import requests
+import json
 
 with open(r'G:\Study\Py projects\Keys\tg_chat_key.txt', 'r') as file:
     bot = telebot.TeleBot(file.read())
@@ -24,6 +25,17 @@ def start(message):  # функция приветствия
     with open(r'resources\messages\main.txt', 'r', encoding='utf-8') as start_message:
         photo = open(r'resources\images\tinder_main.png', 'rb')
         bot.send_photo(message.chat.id, photo, caption=start_message.read().replace('*', ''))
+    menu_buttons = {
+        '/start': "Главное меню бота",
+        "/profile": 'Сгенерировать профиль для Tinder',
+        '/opener': 'Сгенерировать первое сообщение',
+        '/helper': 'Помощь с ответами девушке',
+        '/date': 'Потренироваться на звездах',
+        '/gpt': 'Задать вопрос к ChatGPT'
+    }
+    str_menu_buttons = json.dumps(menu_buttons)
+    json_menu_buttons = json.loads(str_menu_buttons)
+    bot.set_chat_menu_button(message.chat.id, json_menu_buttons)
 
 
 @bot.message_handler(commands=['gpt'])
@@ -93,7 +105,6 @@ def choose_girl(call):
     chatgpt.set_prompt(promt)
 
 # конец обработчиков нажатия кнопок
-
 
 # простые функции
 def helper_dialog(message):
