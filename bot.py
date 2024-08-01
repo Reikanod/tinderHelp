@@ -15,6 +15,8 @@ class Dialog:
 
 dialog = Dialog()
 chatgpt = ChatGptService(token='gpt:EG44JHCgWRZcE28XEIsgJFkblB3TKFPdeHKs9DxUsueSBurd')
+dialog.count = 0
+dialog.user = {}
 
 # обработчики команд пользователей
 
@@ -104,6 +106,19 @@ def choose_girl(call):
     bot.send_photo(call.message.chat.id, image, caption=text)
     chatgpt.set_prompt(promt)
 
+
+@bot.message_handler(commands=['profile'])
+def profile(message):
+    dialog.mode = 'profile'
+    text = open(r'resources\messages\profile.txt', 'r', encoding='utf-8').read()
+    photo = open(r'resources\images\profile.webp', 'rb')
+    bot.send_photo(message.chat.id, photo, caption=text)
+
+    dialog.user.clear()
+    dialog.count = 0
+    bot.send_message(message.chat.id, "Сколько вам лет?")
+
+
 # конец обработчиков нажатия кнопок
 
 # простые функции
@@ -125,6 +140,36 @@ def gpt_dialog(message):  # функция непосредственно общ
     text_from_human = message.text
     answer = chatgpt.send_question('Напиши четкий и короткий ответ', text_from_human)
     bot.send_message(message.chat.id, answer)
+
+
+def profile_dialog(message):
+    text = message.text
+    match dialog.count:
+        case 0:
+            dialog.user['age'] = text
+            dialog.count += 1
+            bot.send_message(message.chat.id, "Кем вы работаете?")
+        case 1:
+            dialog.user['profession'] = text
+            dialog.count += 1
+            bot.send_message(message.chat.id, "Назовите свое хобби, если оно есть")
+        case 2:
+            dialog.user['hobby'] = text
+            dialog.count += 1
+            bot.send_message(message.chat.id, "Что вам не нравится в людях?")
+        case 3:
+            dialog.user['dislike'] = text
+            dialog.count += 1
+            bot.send_message(message.chat.id, "Что вам нравится в людях?")
+        case 4:
+            dialog.user['like'] = text
+            dialog.count += 1
+            bot.send_message(message.chat.id, "Какая ваша цель знакомства?")
+        case 5:
+            dialog.user['goal'] = text
+            dialog.count += 1
+        case _:
+            bot.send_message(message.chat.id, "Возникла ошибка, перезапустите диалог по команде /profile")
 # конец простых функций
 
 
@@ -140,6 +185,8 @@ def main(message):  # функция для перемещения по маши
             date_dialog(message)
         case 'helper':
             helper_dialog(message)
+        case 'profile':
+            profile_dialog(message)
 
 
 
