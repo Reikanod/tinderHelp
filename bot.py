@@ -27,17 +27,15 @@ def start(message):  # функция приветствия
     with open(r'resources\messages\main.txt', 'r', encoding='utf-8') as start_message:
         photo = open(r'resources\images\tinder_main.png', 'rb')
         bot.send_photo(message.chat.id, photo, caption=start_message.read().replace('*', ''))
-    menu_buttons = {
-        '/start': "Главное меню бота",
-        "/profile": 'Сгенерировать профиль для Tinder',
-        '/opener': 'Сгенерировать первое сообщение',
-        '/helper': 'Помощь с ответами девушке',
-        '/date': 'Потренироваться на звездах',
-        '/gpt': 'Задать вопрос к ChatGPT'
-    }
-    str_menu_buttons = json.dumps(menu_buttons)
-    json_menu_buttons = json.loads(str_menu_buttons)
-    bot.set_chat_menu_button(message.chat.id, json_menu_buttons)
+    c1 = telebot.types.BotCommand(command='start', description='Главное меню бота')
+    c2 = telebot.types.BotCommand(command='profile', description='Создать профиль для Tinder')
+    c3 = telebot.types.BotCommand(command='opener', description='Сгенерировать открывающее сообщение')
+    c4 = telebot.types.BotCommand(command='helper', description='Помощь с ответами девушке')
+    c5 = telebot.types.BotCommand(command='date', description='Потренироваться на звездах')
+    c6 = telebot.types.BotCommand(command='gpt', description='Задать вопрос ChatGPT')
+    bot.set_my_commands([c1, c2, c3, c4, c5, c6])
+    bot.set_chat_menu_button(message.chat.id, telebot.types.MenuButtonCommands())
+    menu = bot.get_chat_menu_button(message.chat.id)
 
 
 @bot.message_handler(commands=['gpt'])
@@ -67,7 +65,7 @@ def date(message):
 def helper(message):
     dialog.mode = 'helper'
     photo = open(r'resources\images\helper.png', 'rb')
-    text = open(r'resources\messages\helper.txt', 'r', encoding='utf-8').read()
+    text = open(r'resources\messages\helper.txt', 'r', encoding='2utf-8').read()
     promt = open(r'resources\prompts\helper.txt', 'r', encoding='utf-8').read()
     bot.send_photo(message.chat.id, photo, caption=text)
     chatgpt.set_prompt(promt)
