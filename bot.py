@@ -117,6 +117,18 @@ def profile(message):
     bot.send_message(message.chat.id, "Сколько вам лет?")
 
 
+@bot.message_handler(commands=['opener'])
+def opener(message):
+    dialog.mode = 'opener'
+    text = open(r'resources\messages\opener.txt', 'r', encoding='utf-8').read()
+    photo = open(r'resources\images\opener.jpg', 'rb')
+    bot.send_photo(message.chat.id, photo, caption=text)
+
+    dialog.user.clear()
+    dialog.count = 0
+    bot.send_message(message.chat.id, "Как зовут девушку?")
+
+
 # конец обработчиков нажатия кнопок
 
 # простые функции
@@ -166,8 +178,45 @@ def profile_dialog(message):
         case 5:
             dialog.user['goal'] = text
             dialog.count += 1
+            promt = open(r'resources\prompts\profile.txt', 'r', encoding='utf-8').read()
+            map = {
+                'age': 'Возраст',
+                'profession': 'Профессия, работа',
+                'hobby': 'Хобби, любимое занятие',
+                'dislike': 'Не нравится в людях',
+                'like': 'Нравится в людях',
+                'goal': 'Цель, ради которой сижу в Тиндере'
+            }
+            user_info = ''
+            for key, val in map.items():
+                if key in dialog.user:
+                    user_info += f'{val}: {dialog.user[key]}.\n'
+
+            my_message = bot.send_message(message.chat.id, "ChatGPT пишет ответ...")
+            answer = chatgpt.send_question(promt, user_info)
+            bot.edit_message_text(text=answer, chat_id=message.chat.id, message_id=my_message.id)
+
+
         case _:
             bot.send_message(message.chat.id, "Возникла ошибка, перезапустите диалог по команде /profile")
+
+def opener_dialog(message):
+    text = message.text
+
+    match dialog.count:
+        case 0:
+            dialog.girl['name'] = text
+            dialog.count += 1
+            bot.send_message(message.chat.id, 'Сколько ей лет?')
+        case 1:
+            dialog.girl['age'] = text
+            dialog.count += 1
+            bot.send_message(message.chat.id, 'Оцени ее внешность от 1 до 5 баллов')
+        case 2:
+            dialog.girl['look'] = text
+            dialog.count += 1
+
+
 # конец простых функций
 
 
@@ -185,6 +234,9 @@ def main(message):  # функция для перемещения по маши
             helper_dialog(message)
         case 'profile':
             profile_dialog(message)
+        case 'opener':
+            opener_dialog(message)
+
 
 
 
