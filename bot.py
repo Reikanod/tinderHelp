@@ -17,6 +17,7 @@ dialog = Dialog()
 chatgpt = ChatGptService(token='gpt:EG44JHCgWRZcE28XEIsgJFkblB3TKFPdeHKs9DxUsueSBurd')
 dialog.count = 0
 dialog.user = {}
+dialog.girl = {}
 
 # обработчики команд пользователей
 
@@ -211,11 +212,20 @@ def opener_dialog(message):
         case 1:
             dialog.girl['age'] = text
             dialog.count += 1
-            bot.send_message(message.chat.id, 'Оцени ее внешность от 1 до 5 баллов')
-        case 2:
-            dialog.girl['look'] = text
-            dialog.count += 1
-
+            promt = open(r'resources\prompts\opener.txt', 'r', encoding='utf-8').read()
+            map = {
+                'name': 'Имя девушки',
+                'age': 'Возраст девушки',
+            }
+            user_info = ''
+            for key, val in map.items():
+                if key in dialog.girl:
+                    user_info += f'{val}: {dialog.girl[key]}.\n'
+            my_message = bot.send_message(message.chat.id, "ChatGPT пишет ответ...")
+            answer = chatgpt.send_question(promt, user_info)
+            bot.edit_message_text(text=answer, chat_id=message.chat.id, message_id=my_message.id)
+        case _:
+            bot.send_message(message.chat.id, "Возникла ошибка, перезапустите диалог по коменде /opener")
 
 # конец простых функций
 
